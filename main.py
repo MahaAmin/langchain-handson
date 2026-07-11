@@ -6,6 +6,34 @@ from langchain_ollama import ChatOllama
 load_dotenv()
 
 
+def invoke_openai(model, prompt_template, prompt_input):
+    summary_promt_template = PromptTemplate(
+        input_variables=["information"], template=prompt_template
+    )
+
+    # openAI llm
+    llm = ChatOpenAI(temperature=0, model=model)
+
+    chain = summary_promt_template | llm
+
+    response = chain.invoke(input={"information": prompt_input})
+    return response
+
+
+def invoke_ollama(model, prompt_template, prompt_input):
+    summary_promt_template = PromptTemplate(
+        input_variables=["information"], template=prompt_template
+    )
+
+    # local llm using ollama
+    llm = ChatOllama(temperature=0, model=model)
+
+    chain = summary_promt_template | llm
+
+    response = chain.invoke(input={"information": prompt_input})
+    return response
+
+
 def main():
     print("Hello world from langchain!")
     information = """
@@ -26,19 +54,11 @@ Musk's political activities, views, and statements have made him a polarizing fi
     2. two interesting facts about them
     """
 
-    summary_promt_template = PromptTemplate(
-        input_variables=["information"], template=summary_template
-    )
+    openai_response = invoke_openai("gpt-5", summary_template, information)
+    print(openai_response.content)
 
-    # openAI llm
-    # llm = ChatOpenAI(temperature=0, model="gpt-5")
-
-    # local llm using ollama
-    llm = ChatOllama(temperature=0, model="gemma3:270m")
-    chain = summary_promt_template | llm
-
-    response = chain.invoke(input={"information": information})
-    print(response.content)
+    ollama_response = invoke_ollama("gemma3:270m", summary_template, information)
+    print(ollama_response.content)
 
 
 if __name__ == "__main__":
